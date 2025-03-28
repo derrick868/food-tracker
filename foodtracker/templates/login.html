@@ -1,0 +1,50 @@
+{% extends "base.html" %} {% block title %}Login{% endblock %}
+{% block content%}
+			<div class="row t20" style=  "max-width: 700px; /* Limits the form width */
+    margin: auto; /* Centers it horizontally */">
+				<div class="col-lg-8 col-lg-offset-2">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<h3 class="lean-h text-black">
+								<i class="glyphicon glyphicon-plus-sign"></i> Login
+							</h3>
+							<hr />
+<form action="" method="POST" role="form">
+							
+								<div class="row">
+									<div class="col-lg-4">
+										<div class="form-group">
+											<label for="food-name">Email</label>
+						                  	<input type="text" class="form-control" id="email" name="email" placeholder="Enter Your Email" value="" autofocus>
+										</div>
+									</div>
+									<div class="col-lg-4">
+										<div class="form-group">
+						                  <label for="carbohydrates">Password</label>
+						                  <input type="number" class="form-control" id="password" name="password" placeholder="Enter Your Pasword" value="">
+						                </div>
+									</div>
+								</div>
+								
+
+									<div class="row">
+
+									<div class="col-lg-4">
+										<div class="form-group">
+											<label style="visibility:hidden">Login</label>
+											
+											<button type="submit" class="btn btn-primary btn-block">
+												<i class="glyphicon glyphicon-upload"></i> Login
+											</button>
+										</div>
+									</div>
+</div>
+							
+							
+							</form>
+							</div>	
+						</div>
+					</div>
+				</div>
+			
+{% endblock %}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>{% block title %}Home{% endblock %}</title>
+
+		<link href="https://fonts.googleapis.com/css?family=Oswald|Ubuntu:400,700" rel="stylesheet">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="{{ url_for('static', filename='bs/css/united.min.css') }}" />
+		<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
+
+
+
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+			<style type="text/css">		select {
+    display: block !important;
+    visibility: visible !important;
+}
+.nutrient-row {
+    display: flex !important;
+    flex-wrap: wrap;  /* Allow wrapping on small screens */
+    justify-content: center; /* Center items when they wrap */
+    gap: 20px; /* Space between items */
+}
+
+.nutrient-item {
+    flex: 1 1 200px; /* Allow flexible width with min size */
+    min-width: 150px; /* Ensure minimum width */
+    white-space: nowrap; /* Prevent text breaking */
+}
+.navbar-toggler {
+  border: 2px solid #000;  /* Adds a black border */
+  background-color: rgba(255, 255, 255, 0.8);  /* Light background */
+}
+
+.alert {
+    display: block !important;
+    opacity: 1 !important;
+}
+.navbar-toggler {
+    padding: 12px;
+    background-color: #007bff;  /* Change button color */
+    border-radius: 5px;
+}
+
+.navbar-toggler i {
+    font-size: 30px; /* Adjust icon size */
+    color: white;  /* Make icon white */
+}
+
+
+</style>
+	</head>
+	<body>
+
+		<div class="container-fluid" id="wrapper">
+		
+				
+			
+			<div class="row" id="homeJumbo">
+				<div class="overlay"></div>
+				<div class="col-lg-12">
+					<h1>
+						<a href="">FOOD TRACKER</a>
+					</h1>
+					  	 <nav class="navbar navbar-expand-lg ">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbar"
+      ><i class="fas fa-bars"></i>
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbar">
+         <div class="navbar-nav">
+
+
+         <div class="row t20">
+						<div class="col-lg-4 col-lg-offset-4">
+							<ul class="nav nav-pills nav-justified">
+							 {% if user.is_authenticated %}
+							  <li role="presentation" class="active">
+							  	<a class="nav-item nav-link" href="{{ url_for('main.index')}}" title="Home">Home</a>
+							  </li>
+							  <li role="presentation">
+							  	<a class="nav-item nav-link"href="{{ url_for('main.add')}}" title="Add Food Item">Add Food Item</a>
+							  </li>
+
+							    <li role="presentation">
+							  	<a class="nav-item nav-link"href="{{ url_for('main.logout')}}" title="Add Food Item">Logout</a>
+							  </li>
+							    {% else %}
+
+							    <li role="presentation">
+							  	<a class="nav-item nav-link"href="{{ url_for('main.login')}}" title="Add Food Item">Login</a>
+							  </li>
+
+							  
+
+							    <li role="presentation">
+							  	<a class="nav-item nav-link"href="{{ url_for('main.signup')}}" title="Add Food Item">signup</a>
+							  </li>
+							   {% endif %}
+							</ul>
+						</div>
+					</div>
+         
+        </div>
+      </div>
+    </nav>
+    		    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %} {% if category == 'error' %}
+    <div class="alert alert-danger alter-dismissable fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% else %}
+    <div class="alert alert-success alter-dismissable fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %} {% endfor %} {% endif %} {% endwith %}	
+{% block content %}
+
+    	{% endblock %}
+		
+			<footer>
+				<div class="row pad">
+					<div class="col-lg-12 text-center">
+						Copyright &copy; 2017 <strong>Food Tracker</strong>
+					</div>
+				</div>
+			</footer>
+
+		</div>
+</div>
+</div>
+		<!-- jQuery -->
+		<script src="{{ url_for('static', filename='bs/js/jquery.min.js') }}"></script>
+		<!-- Bootstrap JavaScript -->
+		<script src="{{ url_for('static', filename='bs/js/bootstrap.min.js') }}"></script>
+		<script>
+    $(document).ready(function(){
+        $(".alert").fadeTo(3000, 500).slideUp(500, function(){
+            $(this).remove();
+        });
+    });
+</script>
+	</body>
+</html>
