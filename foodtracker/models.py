@@ -9,6 +9,8 @@ log_food = db.Table('log_food',
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True)
+    confirmed = db.Column(db.Boolean, default=False)
+
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
     foods= db.relationship('Food', backref='user', lazy=True)  # Define relationship

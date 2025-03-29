@@ -1,13 +1,14 @@
-from flask import Blueprint,Flask, render_template, request, redirect, url_for,flash
+from flask import Blueprint,Flask, render_template, request, redirect, url_for,flash,current_app
 from foodtracker.models import Food, Log, User
 from werkzeug.security import generate_password_hash, check_password_hash
-from foodtracker.extensions import db
+from foodtracker.extensions import db,mail
 from datetime import datetime
 from flask_login import login_user, login_required, logout_user, current_user
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from flask_mail import Mail,Message
 
 main = Blueprint('main', __name__)
-
-main.secret_key = "supersecretkey" 
+s = URLSafeTimedSerializer('SHSHSHSHHSHS')
 
 
 @main.route('/login', methods=['GET', 'POST'])
@@ -17,16 +18,24 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
-            flash('Logged in successfully!', category='success')
-            login_user(user, remember=True)
 
-            next_page = request.args.get('next')  # Handle Flask-Login redirects
-            return redirect(next_page) if next_page else redirect(url_for('main.index'))
+        if not user:
+            flash('No account found with this email.', category='error')
+        elif not check_password_hash(user.password, password):
+            flash('Incorrect password.', category='error')
+        elif not user.confirmed:  
+            print(f"User {email} is not confirmed!")  # ✅ Debug log
+            flash('Please confirm your email before logging in.', category='warning')
         else:
-            flash('Invalid credentials.', category='error')
+            print(f"User {email} logged in successfully!")  # ✅ Debug log
+            login_user(user, remember=True)
+            flash('Logged in successfully!', category='success')
+            return redirect(url_for('main.index'))
 
-    return render_template('login.html',user=current_user)  # ✅ Ensure proper login page rendering
+    return render_template('login.html', user=current_user)
+
+
+
 
 
 
@@ -37,7 +46,7 @@ def logout():
     return redirect(url_for('main.login'))
 
 
-@main.route('/signup',  methods=['GET', 'POST'])
+@main.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         email = request.form.get('email')
@@ -46,8 +55,9 @@ def signup():
         password2 = request.form.get('password2')
 
         user = User.query.filter_by(email=email).first()
+
         if user:
-            flash('Email already exists!',category='error')
+            flash('Email already exists!', category='error')
         elif len(email) < 4:
             flash('Email must be greater than 4 characters.', category='error')
         elif len(firstname) < 2:
@@ -57,21 +67,47 @@ def signup():
         elif len(password1) < 7:
             flash('Password must be at least 7 characters.', category='error')
         else:
-            # ✅ Create new user
-            new_User = User(email=email, first_name=firstname,
-                            password=generate_password_hash(password1, method="pbkdf2:sha256"))
-            db.session.add(new_User)
+            # ✅ Generate token and send confirmation email
+            token = s.dumps(email, salt='email-confirm')
+            msg = Message('Confirm Your Email', sender='derrickndirangu868@gmail.com', recipients=[email])
+            link = url_for('main.confirm_email', token=token, _external=True)
+            msg.body = f'Click this link to confirm your email: {link}'
+            mail.send(msg)
+
+            # ✅ Create user with confirmed=False
+            new_user = User(email=email, first_name=firstname,
+                            password=generate_password_hash(password1, method="pbkdf2:sha256"),
+                            confirmed=False)
+            db.session.add(new_user)
             db.session.commit()
-            
-            flash('Account Created Successfully!', category='success')
-            
-            # ✅ Fix: Log in the new user (not the old one)
-            login_user(new_User, remember=True)
 
-            return redirect(url_for('main.index'))
+            flash('Account created! Check your email to confirm.', category='success')
+            return redirect(url_for('main.login'))
 
-    return render_template('signup.html',user=current_user)
+    return render_template('signup.html', user=current_user)
 
+@main.route('/confirm_email/<token>')
+def confirm_email(token):
+    try:
+        email = s.loads(token, salt='email-confirm', max_age=3600)  # Token valid for 1 hour
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            user.confirmed = True  # ✅ Mark email as confirmed
+            db.session.commit()  # ✅ Save changes to database
+            flash('Your email has been confirmed! You can now log in.', 'success')
+            return redirect(url_for('main.login'))
+
+    except SignatureExpired:
+        flash('Confirmation link expired. Please request a new one.', 'danger')
+        return redirect(url_for('main.signup'))
+
+    flash('Invalid confirmation link.', 'danger')
+    return redirect(url_for('main.signup'))
+
+
+    
+    
 
 @main.route('/')
 @login_required  # ✅ Requires user to be logged in
@@ -244,13 +280,13 @@ def add_food_to_log(log_id):
     selected_food_id = request.form.get('food-select')
 
     if not selected_food_id:
-        flash("No food selected!", category=error)
+        flash("No food selected!", category="error")
         return redirect(url_for('main.view', log_id=log_id))
 
     food = Food.query.get(int(selected_food_id))
 
     if not food:
-        flash("Invalid food item!", category=error)
+        flash("Invalid food item!", category="error")
         return redirect(url_for('main.view', log_id=log_id))
 
     # Check if food is already in log (to prevent duplicates)
